@@ -2,7 +2,10 @@
 from tkinter import *
 from tkinter import messagebox
 from datetime import datetime, timedelta
+# library to validate ID Number
 import rsaidnumber
+# library to validate email
+from email_validator import validate_email, EmailNotValidError
 
 # setup of tkinter window
 login = Tk()
@@ -42,18 +45,35 @@ class Verify:
         self.verify_btn = Button(master, text="Verify", font="poppins 10", bg="light blue", command=self.age_check)
         self.verify_btn.place(x=190, y=390)
 
+
 # checking if the user is older than 18
     def age_check(self):
-        id_number = rsaidnumber.parse(self.id_no_entry.get())
-        age = str((datetime.today() - id_number.date_of_birth) // timedelta(days=365.25))
         try:
+            line = ""
+            results = open("results.txt", 'w')
+            results.write("Username: " + self.username_entry.get())
+            results.write('\n')
+            results.write("Email Address: " + self.email_entry.get())
+            results.write('\n')
+            results.write("User Address: " + self.address_entry.get())
+            results.write('\n')
+            results.write("ID Number: " + self.id_no_entry.get())
+            id_number = rsaidnumber.parse(self.id_no_entry.get())
+
+            age = str((datetime.today() - id_number.date_of_birth) // timedelta(days=365.25))
             if int(age) >= 18:
                 messagebox.showinfo("Qualified", "lets play")
             elif int(age) < 18:
                 ages = str(int(age) - 18)
                 messagebox.showerror("Error", "You don't qualify try again in " + ages + " year/s")
+
         except ValueError:
-            messagebox.showerror("Error", "Enter a Valid ID number")
+            messagebox.showerror("Error", "ID number not valid")
+
+        try:
+            validate_email(self.email_entry.get())
+        except EmailNotValidError:
+            messagebox.showerror("Error", "Not a valid email address")
 
 
 verify = Verify(login)
