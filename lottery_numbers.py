@@ -124,24 +124,29 @@ class LotteryNumbers:
         self.user_answers3.place(x=200, y=550)
         self.play_btn = Button(master, text="Play", command=self.play)
         self.play_btn.place(x=150, y=600)
-        self.claim_btn = Button(master, text="Claim")
+        self.claim_btn = Button(master, text="Claim Price")
         self.claim_btn.place(x=250, y=600)
-        self.replay_btn = Button(master, text="Play Again")
-        self.replay_btn.place(x=350, y=600)
+        self.replay_btn = Button(master, text="Play Again", command=self.play_again)
+        self.replay_btn.place(x=400, y=600)
+        self.prizes_label = Label(master, bg="grey")
+        self.prizes_label.place(x=50, y=600)
+        self.lotto_no = Label(master, bg="grey")
+        self.lotto_no.place(x=50, y=550)
         self.lottery_set1 = []
         self.lottery_set2 = []
         self.lottery_set3 = []
 
-    def on_click(self, num):
-        if len(self.lottery_set1) <= 5 and num not in self.lottery_set1:
-            self.lottery_set1.append(num)
+    def on_click(self, pick):
+        if len(self.lottery_set1) <= 5 and pick not in self.lottery_set1:
+            self.lottery_set1.append(pick)
             self.user_answers1.config(text=self.lottery_set1)
 
-        elif len(self.lottery_set1) == 6 and len(self.lottery_set2) <= 5 and num not in self.lottery_set2:
-            self.lottery_set2.append(num)
+        elif len(self.lottery_set1) == 6 and len(self.lottery_set2) <= 5 and pick not in self.lottery_set2:
+            self.lottery_set2.append(pick)
             self.user_answers2.config(text=self.lottery_set2)
-        elif len(self.lottery_set2) == 6 and len(self.lottery_set3) <= 5 and num not in self.lottery_set3:
-            self.lottery_set3.append(num)
+
+        elif len(self.lottery_set2) == 6 and len(self.lottery_set3) <= 5 and pick not in self.lottery_set3:
+            self.lottery_set3.append(pick)
             self.user_answers3.config(text=self.lottery_set3)
         else:
             messagebox.showerror("Error", "You can only choose one number")
@@ -150,19 +155,82 @@ class LotteryNumbers:
         correct = 0
         correct2 = 0
         correct3 = 0
+        earnings1 = 0
+        earnings2 = 0
+        earnings3 = 0
+        prizes = [0, 0, 20, 100.50, 2384, 8584, 10000000]  # prizes in rands
         lotto_list = random.sample(range(1, 49), 6)
+        lotto_list.sort()
+        matching1 = set(self.lottery_set1).intersection(set(lotto_list))
+        matching2 = set(self.lottery_set2).intersection(set(lotto_list))
+        matching3 = set(self.lottery_set3).intersection(set(lotto_list))
         for number in self.lottery_set1:
             if number in lotto_list:
                 correct += 1
+            if correct == 2:
+                earnings1 = prizes[2]
+            elif correct == 3:
+                earnings1 = prizes[3]
+            elif correct == 4:
+                earnings1 = prizes[4]
+            elif correct == 5:
+                earnings1 = prizes[5]
+            elif correct == 6:
+                earnings1 = prizes[6]
+        else:
+            messagebox.showerror("Matches", "Matches in set one: " + str(correct) + "\nEarnings: " + "R" + str(earnings1) +
+                                 "\nMatching number: " + str(matching1))
+
         for number in self.lottery_set2:
             if number in lotto_list:
                 correct2 += 1
+            if correct2 == 2:
+                earnings2 = prizes[2]
+            elif correct2 == 3:
+                earnings2 = prizes[3]
+            elif correct2 == 4:
+                earnings2 = prizes[4]
+            elif correct2 == 5:
+                earnings2 = prizes[5]
+            elif correct2 == 6:
+                earnings2 = prizes[6]
+        else:
+            messagebox.showerror("Matches", "Matches in set one: " + str(correct2) + "\nEarnings: " +
+                                 "R" + str(earnings2) + "\nMatching number: " + str(matching2))
+
         for number in self.lottery_set3:
             if number in lotto_list:
                 correct3 += 1
-        if correct >= 2:
-            messagebox.showinfo("Congratulations", "You won" + 20 + "bucks")
+            if correct3 == 2:
+                earnings3 = prizes[2]
+            elif correct3 == 3:
+                earnings3 = prizes[3]
+            elif correct3 == 4:
+                earnings3 = prizes[4]
+            elif correct3 == 5:
+                earnings3 = prizes[5]
+            elif correct3 == 6:
+                earnings3 = prizes[6]
+        else:
+            messagebox.showerror("Matches", "Matches in set one: " + str(correct3) + "\nEarnings: " +
+                                 "R" + str(earnings3) + "\nMatching number: " + str(matching3))
 
+        if len(self.lottery_set1) == 6 and len(self.lottery_set2) == 6 and len(self.lottery_set3) == 6:
+            user_prize = float(earnings1 + earnings2 + earnings3)
+            self.prizes_label.config(text="R" + str(user_prize))
+            self.lotto_no.config(text=lotto_list)
+        else:
+            messagebox.showinfo("Error", "Please use all your tries first")
+
+    def play_again(self):
+        self.user_answers1.config(text="")
+        self.user_answers2.config(text="")
+        self.user_answers3.config(text="")
+        self.prizes_label.config(text="")
+        self.lotto_no.config(text="")
+        self.lottery_set1 = []
+        self.lottery_set2 = []
+        self.lottery_set3 = []
 
 
 numbers = LotteryNumbers(lottery)
