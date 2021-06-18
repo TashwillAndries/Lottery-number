@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 import rsaidnumber
 # library to validate email
 from email_validator import validate_email, EmailNotValidError
+# generating a random id
+import uuid
 
 # setup of tkinter window
 login = Tk()
@@ -19,6 +21,7 @@ canvas.create_image(0, 0, anchor=NW, image=image)
 canvas.pack()
 
 
+# class that contains the setup for the window
 class Verify:
 
     def __init__(self, master):
@@ -58,15 +61,18 @@ class Verify:
             results.write("User Address: " + self.address_entry.get())
             results.write('\n')
             results.write("ID Number: " + self.id_no_entry.get())
+            results.write('\n')
+
             id_number = rsaidnumber.parse(self.id_no_entry.get())
 
             age = str((datetime.today() - id_number.date_of_birth) // timedelta(days=365.25))
             if int(age) >= 18:
                 messagebox.showinfo("Qualified", "lets play")
+                login.destroy()
+                import lottery_numbers
             elif int(age) < 18:
                 ages = str(int(age) - 18)
                 messagebox.showerror("Error", "You don't qualify try again in " + ages + " year/s")
-
         except ValueError:
             messagebox.showerror("Error", "ID number not valid")
 
@@ -77,4 +83,10 @@ class Verify:
 
 
 verify = Verify(login)
+
+
+def player():
+    player_id = uuid.uuid4()
+    return player_id
+
 login.mainloop()
