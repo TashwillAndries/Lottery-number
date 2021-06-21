@@ -150,7 +150,7 @@ class LotteryNumbers:
         self.lottery_set2 = []
         self.lottery_set3 = []
 
-
+# function to append numbers to list
     def on_click(self, pick):
         playsound("click.mp3")
         if len(self.lottery_set1) <= 5 and pick not in self.lottery_set1:

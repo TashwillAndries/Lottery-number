@@ -84,7 +84,7 @@ class Verify:
 
 verify = Verify(login)
 
-
+# function to generate Unique user ID
 def player():
     player_id = uuid.uuid4()
     results = open("results.txt", 'a+')
