@@ -52,7 +52,7 @@ class Verify:
     def age_check(self):
         playsound("click.mp3")
         try:
-            results = open("results.txt", 'w')
+            results = open("results.txt", 'a')
             results.write("Username: " + self.username_entry.get())
             results.write('\n')
             results.write("Email Address: " + self.email_entry.get())
@@ -72,7 +72,7 @@ class Verify:
                 login.destroy()
                 import lottery_numbers
             if __name__ == "__main__":
-                login.destroy()
+                login.withdraw()
             elif int(age) < 18:
                 ages = str(int(age) - 18)
                 messagebox.showerror("Error", "You don't qualify try again in " + ages + " year/s")
@@ -87,8 +87,9 @@ verify = Verify(login)
 
 def player():
     player_id = uuid.uuid4()
-    results = open("results.txt", 'a')
-    results.write("Player ID: " + str(player_id))
+    results = open("results.txt", 'a+')
+    results.write("\n Player ID: " + str(player_id))
+    results.write('\n')
     return player_id
 
 

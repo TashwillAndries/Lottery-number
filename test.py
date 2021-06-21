@@ -1,9 +1,20 @@
 import unittest
-from main import Verify
 
-class Age(unittest.TestCase):
-    def test_add(self):
-        add_object = self.
-        self.assertEqual(add_object.add(1, 1), 2), "Incorrect addition. Answer should be two"
+import rsaidnumber
 
-for i in range(-3, 3):
+
+def id_number():
+    number = rsaidnumber.parse('9903105047084')
+    return number.valid
+
+
+class Rsa(unittest.TestCase):
+    def checking(self):
+        a = rsaidnumber.parse('9903105047084')
+
+    def testing(self):
+        self.assertTrue(rsaidnumber.RSA_ID_LENGTH, 13)
+
+
+if __name__ == '__main__':
+    unittest.main()

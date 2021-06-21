@@ -240,6 +240,7 @@ class LotteryNumbers:
 
     # function that calculates winnings
     def winnings(self):
+        playsound("click.mp3")
         global winnings
         if len(self.lottery_set1) == 6 and len(self.lottery_set2) == 6 and len(self.lottery_set3) == 6:
             winnings = float(self.earnings1 + self.earnings2 + self.earnings3)
@@ -250,6 +251,7 @@ class LotteryNumbers:
             messagebox.showinfo("Error", "Please use all your tries first")
 
     def play_again(self):
+        playsound("click.mp3")
         self.user_answers1.config(text="")
         self.user_answers2.config(text="")
         self.user_answers3.config(text="")
@@ -261,6 +263,7 @@ class LotteryNumbers:
 
     # send users to the bank details window
     def claim(self):
+        playsound("click.mp3")
         if winnings >= 20:
             lottery.withdraw()
             self.new_window = Toplevel(self.master)
@@ -268,6 +271,9 @@ class LotteryNumbers:
             self.new_window.title("Banking Details")
             self.new_window.geometry("550x650")
             self.detail = Window2(self.new_window)
+            results = open("results.txt", 'a+')
+            results.write("\nWinnings: " + str(winnings))
+            results.write('\n')
         else:
             messagebox.showerror("Error", "No prize to claim")
 
@@ -306,7 +312,7 @@ class Window2:
         self.email_entry.place(x=350, y=300)
         self.winnings_label = Label(master, text="Enter Winnings to Convert: ", bg="yellow")
         self.winnings_label.place(x=20, y=350)
-        self.winnings_entry = Entry(master)
+        self.winnings_entry = Label(master, text=winnings, bg="yellow")
         self.winnings_entry.place(x=350, y=350)
         self.conversion_label = Label(master, width=20, bg="green")
         self.conversion_label.place(x=355, y=430)
@@ -314,7 +320,6 @@ class Window2:
         self.conversion_btn.place(x=250, y=510)
         self.send_email = Button(master, text="Confirm Details", border=5, bg="#1e90ff", fg="blue", command=self.confirm)
         self.send_email.place(x=400, y=510)
-        # self.holder_name_entry.swapcase()
         self.currency_box = ttk.Combobox(master)
         self.convert_list = Listbox(master, width=20)
         for i in self.conversion_rate.keys():
@@ -323,21 +328,23 @@ class Window2:
 
 # function to convert to different currency
     def convert(self):
+        playsound("click.mp3")
         for i in self.conversion_rate.keys():
-            num = float(self.winnings_entry.get())
+            num = winnings
             # print(self.currency_json['conversion_rates'][self.convert_list.get(ACTIVE)])
             answer = num * self.currency_json['conversion_rates'][self.convert_list.get(ACTIVE)]
             self.conversion_label['text'] = round(answer, 2)
 
+# function to send email
     def confirm(self):
-        number = self.bank_number_entry.get()
+        playsound("click.mp3")
         account_type = self.account_type_entry.get()
         holder = self.holder_name_entry.get()
+        number = self.bank_number_entry.get
         s = smtplib.SMTP('smtp.gmail.com', 587)
         sender_email_id = 'tashwilla27@gmail.com'
         receiver_email_id = self.email_entry.get()
         password = "N@ruto56"
-
         subject = "Details confirmation"
         msg = MIMEMultipart()
         msg['from'] = sender_email_id
@@ -345,7 +352,7 @@ class Window2:
         msg['Subject'] = subject
 
         body = "Player ID: " + str(player()) + "\nWinnings: " + str(winnings) + "\n Bank Holder name: " \
-               + str(holder) + "\n Account type: " + str(account_type)
+                + str(holder) + "\n Account type: " + str(account_type)
         body = body + "\n Account Number: " + str(number)
 
         msg.attach(MIMEText(body, 'plain'))
