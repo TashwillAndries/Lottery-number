@@ -8,7 +8,7 @@ import rsaidnumber
 from email_validator import validate_email, EmailNotValidError
 # generating a random id
 import uuid
-
+from playsound import playsound
 # setup of tkinter window
 login = Tk()
 login.config(bg="yellow")
@@ -48,11 +48,10 @@ class Verify:
         self.verify_btn = Button(master, text="Verify", font="poppins 10", bg="light blue", command=self.age_check)
         self.verify_btn.place(x=190, y=390)
 
-
 # checking if the user is older than 18
     def age_check(self):
+        playsound("click.mp3")
         try:
-            line = ""
             results = open("results.txt", 'w')
             results.write("Username: " + self.username_entry.get())
             results.write('\n')
@@ -66,20 +65,21 @@ class Verify:
             id_number = rsaidnumber.parse(self.id_no_entry.get())
 
             age = str((datetime.today() - id_number.date_of_birth) // timedelta(days=365.25))
+            if validate_email(self.email_entry.get()):
+                pass
             if int(age) >= 18:
                 messagebox.showinfo("Qualified", "lets play")
                 login.destroy()
                 import lottery_numbers
+            if __name__ == "__main__":
+                login.destroy()
             elif int(age) < 18:
                 ages = str(int(age) - 18)
                 messagebox.showerror("Error", "You don't qualify try again in " + ages + " year/s")
-        except ValueError:
-            messagebox.showerror("Error", "ID number not valid")
-
-        try:
-            validate_email(self.email_entry.get())
         except EmailNotValidError:
             messagebox.showerror("Error", "Not a valid email address")
+        except ValueError:
+            messagebox.showerror("Error", "ID number not valid")
 
 
 verify = Verify(login)
@@ -87,6 +87,9 @@ verify = Verify(login)
 
 def player():
     player_id = uuid.uuid4()
+    results = open("results.txt", 'a')
+    results.write("Player ID: " + str(player_id))
     return player_id
+
 
 login.mainloop()

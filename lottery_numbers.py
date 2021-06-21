@@ -2,7 +2,13 @@
 import random
 from tkinter import *
 from tkinter import messagebox
-
+from tkinter import ttk
+import requests
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from playsound import playsound
+from main import player
 lottery = Tk()
 lottery.config(bg="yellow")
 lottery.title("Lottery Entry")
@@ -12,10 +18,11 @@ canvas = Canvas(lottery, width=385, height=130)
 image = PhotoImage(file="index.png")
 canvas.create_image(0, 0, anchor=NW, image=image)
 canvas.pack()
-
+winnings = 0
 
 class LotteryNumbers:
     def __init__(self, master):
+        self.master = master
         self.numbers_label = Label(master, text="Please Choose 6 unique numbers between 1 - 49", font="poppins 10",
                                    bg="yellow")
         self.numbers_label.place(x=120, y=150)
@@ -124,11 +131,13 @@ class LotteryNumbers:
         self.user_answers3 = Label(master, bg="red", width=25, height=2)
         self.user_answers3.place(x=320, y=550)
         self.play_btn = Button(master, text="Play", command=self.play, border=5, bg="#1e90ff", fg="blue", width=10)
-        self.play_btn.place(x=50, y=600)
+        self.play_btn.place(x=20, y=600)
         self.claim_btn = Button(master, text="Claim Price", border=5, bg="#1e90ff", fg="blue", command=self.claim)
-        self.claim_btn.place(x=230, y=600)
+        self.claim_btn.place(x=310, y=600)
         self.replay_btn = Button(master, text="Play Again", command=self.play_again, border=5, bg="#1e90ff", fg="blue")
-        self.replay_btn.place(x=400, y=600)
+        self.replay_btn.place(x=430, y=600)
+        self.show_btn = Button(master, text="Show Winnings", command=self.winnings, border=5, bg="#1e90ff", fg="blue")
+        self.show_btn.place(x=150, y=600)
         self.winning = Label(master, bg="yellow", text="Winnings")
         self.winning.place(x=120, y=530)
         self.prizes_label = Label(master, bg="green", width=25, height=2)
@@ -143,10 +152,10 @@ class LotteryNumbers:
 
 
     def on_click(self, pick):
+        playsound("click.mp3")
         if len(self.lottery_set1) <= 5 and pick not in self.lottery_set1:
             self.lottery_set1.append(pick)
             self.user_answers1.config(text=self.lottery_set1)
-
         elif len(self.lottery_set1) == 6 and len(self.lottery_set2) <= 5 and pick not in self.lottery_set2:
             self.lottery_set2.append(pick)
             self.user_answers2.config(text=self.lottery_set2)
@@ -157,77 +166,86 @@ class LotteryNumbers:
         else:
             if len(self.lottery_set3) == 6:
                 messagebox.showerror("Error", "Entries are full")
+            elif pick in self.lottery_set3:
+                messagebox.showerror("Error", "Number already chosen")
+            elif pick in self.lottery_set2:
+                messagebox.showerror("Error", "Number already chosen")
+            elif pick in self.lottery_set1:
+                messagebox.showerror("Error", "Number already chosen")
 
     def play(self):
         correct = 0
         correct2 = 0
         correct3 = 0
-        earnings1 = 0
-        earnings2 = 0
-        earnings3 = 0
+        self.earnings1 = 0
+        self.earnings2 = 0
+        self.earnings3 = 0
         prizes = [0, 0, 20, 100.50, 2384, 8584, 10000000]  # prizes in rands
-        lotto_list = random.sample(range(1, 49), 6)
-        lotto_list.sort()
-        matching1 = set(self.lottery_set1).intersection(set(lotto_list))
-        matching2 = set(self.lottery_set2).intersection(set(lotto_list))
-        matching3 = set(self.lottery_set3).intersection(set(lotto_list))
+        self.lotto_list = random.sample(range(1, 49), 6)
+        self.lotto_list.sort()
+        matching1 = set(self.lottery_set1).intersection(set(self.lotto_list))
+        matching2 = set(self.lottery_set2).intersection(set(self.lotto_list))
+        matching3 = set(self.lottery_set3).intersection(set(self.lotto_list))
         for number in self.lottery_set1:
-            if number in lotto_list:
+            if number in self.lotto_list:
                 correct += 1
             if correct == 2:
-                earnings1 = prizes[2]
+                self.earnings1 = prizes[2]
             elif correct == 3:
-                earnings1 = prizes[3]
+                self.earnings1 = prizes[3]
             elif correct == 4:
-                earnings1 = prizes[4]
+                self.earnings1 = prizes[4]
             elif correct == 5:
-                earnings1 = prizes[5]
+                self.earnings1 = prizes[5]
             elif correct == 6:
-                earnings1 = prizes[6]
+                self.earnings1 = prizes[6]
         else:
             messagebox.showerror("Matches", "Matches in set one: " + str(correct) + "\nEarnings: " + "R"
-                                 + str(earnings1) +
+                                 + str(self.earnings1) +
                                  "\nMatching number: " + str(matching1))
 
         for number in self.lottery_set2:
-            if number in lotto_list:
+            if number in self.lotto_list:
                 correct2 += 1
             if correct2 == 2:
-                earnings2 = prizes[2]
+                self.earnings2 = prizes[2]
             elif correct2 == 3:
-                earnings2 = prizes[3]
+                self.earnings2 = prizes[3]
             elif correct2 == 4:
-                earnings2 = prizes[4]
+                self.earnings2 = prizes[4]
             elif correct2 == 5:
-                earnings2 = prizes[5]
+                self.earnings2 = prizes[5]
             elif correct2 == 6:
-                earnings2 = prizes[6]
+                self.earnings2 = prizes[6]
         else:
             messagebox.showerror("Matches", "Matches in set one: " + str(correct2) + "\nEarnings: " +
-                                 "R" + str(earnings2) + "\nMatching number: " + str(matching2))
+                                 "R" + str(self.earnings2) + "\nMatching number: " + str(matching2))
 
         for number in self.lottery_set3:
-            if number in lotto_list:
+            if number in self.lotto_list:
                 correct3 += 1
             if correct3 == 2:
-                earnings3 = prizes[2]
+                self.earnings3 = prizes[2]
             elif correct3 == 3:
-                earnings3 = prizes[3]
+                self.earnings3 = prizes[3]
             elif correct3 == 4:
-                earnings3 = prizes[4]
+                self.earnings3 = prizes[4]
             elif correct3 == 5:
-                earnings3 = prizes[5]
+                self.earnings3 = prizes[5]
             elif correct3 == 6:
-                earnings3 = prizes[6]
+                self.earnings3 = prizes[6]
         else:
             messagebox.showerror("Matches", "Matches in set one: " + str(correct3) + "\nEarnings: " +
-                                 "R" + str(earnings3) + "\nMatching number: " + str(matching3))
+                                 "R" + str(self.earnings3) + "\nMatching number: " + str(matching3))
 
+    # function that calculates winnings
+    def winnings(self):
+        global winnings
         if len(self.lottery_set1) == 6 and len(self.lottery_set2) == 6 and len(self.lottery_set3) == 6:
-            user_prize = float(earnings1 + earnings2 + earnings3)
-            self.prizes_label.config(text="R" + str(user_prize))
-            self.lotto_no.config(text=lotto_list)
-            return user_prize
+            winnings = float(self.earnings1 + self.earnings2 + self.earnings3)
+            self.prizes_label.config(text="R" + str(winnings))
+            self.lotto_no.config(text=self.lotto_list)
+            return winnings
         else:
             messagebox.showinfo("Error", "Please use all your tries first")
 
@@ -241,11 +259,105 @@ class LotteryNumbers:
         self.lottery_set2 = []
         self.lottery_set3 = []
 
+    # send users to the bank details window
     def claim(self):
-        lottery.withdraw()
-        import Claim_price
+        if winnings >= 20:
+            lottery.withdraw()
+            self.new_window = Toplevel(self.master)
+            self.new_window.config(bg="yellow")
+            self.new_window.title("Banking Details")
+            self.new_window.geometry("550x650")
+            self.detail = Window2(self.new_window)
+        else:
+            messagebox.showerror("Error", "No prize to claim")
 
 
-numbers = LotteryNumbers(lottery)
+class Window2:
+    def __init__(self, master):
+        self.master = master
+        # bank details and api details
+        self.banks = ["Capitec", "ABSA", "Nedbank", "Standard bank"]
+        self.currency = requests.get('https://v6.exchangerate-api.com/v6/3b6104d9c62069d198e73219/latest/ZAR')
+        self.currency_json = self.currency.json()
+        self.conversion_rate = self.currency_json['conversion_rates']
+        self.v = StringVar()
+        self.header = Label(master, text="Banking Details", font=("Times", "40", "bold italic"), bg="yellow")
+        self.header.place(x=100, y=20)
+        self.drop_label = Label(master, text="Please select which bank you are with: ", bg="yellow")
+        self.drop_label.place(x=20, y=100)
+        self.combo = ttk.Combobox(master, value=self.banks, width=19)
+        self.combo.place(x=350, y=100)
+        self.holder_name_label = Label(master, text="Please enter Account holders name: ", bg="yellow")
+        self.holder_name_label.place(x=20, y=150)
+        self.holder_name_entry = Entry(master)
+        self.holder_name_entry.place(x=350, y=150)
+        # self.holder_name_entry.bind("<KeyRelease>", self.caps)
+        self.bank_number_label = Label(master, text="Please enter your account number: ", bg="yellow")
+        self.bank_number_label.place(x=20, y=200)
+        self.bank_number_entry = Entry(master)
+        self.bank_number_entry.place(x=350, y=200)
+        self.account_type_label = Label(master, text="Please Enter the account Type: ", bg="yellow")
+        self.account_type_label.place(x=20, y=250)
+        self.account_type_entry = Entry(master)
+        self.account_type_entry.place(x=350, y=250)
+        self.email = Label(master, text="Please Enter email address: ", bg='yellow')
+        self.email.place(x=20, y=300)
+        self.email_entry = Entry(master)
+        self.email_entry.place(x=350, y=300)
+        self.winnings_label = Label(master, text="Enter Winnings to Convert: ", bg="yellow")
+        self.winnings_label.place(x=20, y=350)
+        self.winnings_entry = Entry(master)
+        self.winnings_entry.place(x=350, y=350)
+        self.conversion_label = Label(master, width=20, bg="green")
+        self.conversion_label.place(x=355, y=430)
+        self.conversion_btn = Button(master, text="Convert currency", border=5, bg="#1e90ff", fg="blue", command=self.convert)
+        self.conversion_btn.place(x=250, y=510)
+        self.send_email = Button(master, text="Confirm Details", border=5, bg="#1e90ff", fg="blue", command=self.confirm)
+        self.send_email.place(x=400, y=510)
+        # self.holder_name_entry.swapcase()
+        self.currency_box = ttk.Combobox(master)
+        self.convert_list = Listbox(master, width=20)
+        for i in self.conversion_rate.keys():
+            self.convert_list.insert(END, str(i))
+        self.convert_list.place(x=20, y=450)
 
+# function to convert to different currency
+    def convert(self):
+        for i in self.conversion_rate.keys():
+            num = float(self.winnings_entry.get())
+            # print(self.currency_json['conversion_rates'][self.convert_list.get(ACTIVE)])
+            answer = num * self.currency_json['conversion_rates'][self.convert_list.get(ACTIVE)]
+            self.conversion_label['text'] = round(answer, 2)
+
+    def confirm(self):
+        number = self.bank_number_entry.get()
+        account_type = self.account_type_entry.get()
+        holder = self.holder_name_entry.get()
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        sender_email_id = 'tashwilla27@gmail.com'
+        receiver_email_id = self.email_entry.get()
+        password = "N@ruto56"
+
+        subject = "Details confirmation"
+        msg = MIMEMultipart()
+        msg['from'] = sender_email_id
+        msg['To'] = receiver_email_id
+        msg['Subject'] = subject
+
+        body = "Player ID: " + str(player()) + "\nWinnings: " + str(winnings) + "\n Bank Holder name: " \
+               + str(holder) + "\n Account type: " + str(account_type)
+        body = body + "\n Account Number: " + str(number)
+
+        msg.attach(MIMEText(body, 'plain'))
+        text = msg.as_string()
+        s.starttls()
+        s.login(sender_email_id, password)
+
+        s.sendmail(sender_email_id, receiver_email_id, text)
+        s.quit()
+
+
+# numbers = LotteryNumbers(lottery)
+details = LotteryNumbers(lottery)
 lottery.mainloop()
+
